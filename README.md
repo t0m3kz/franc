@@ -101,6 +101,6 @@ https://img.shields.io/codecov/c/github/t0m3kz/franc?label=coverage
 [coverage-link]:
 https://codecov.io/gh/t0m3kz/franc
 [python-badge]:
-<https://img.shields.io/badge/python-3.10%7C3.11%7C3.12-000000?logo=python>
+<https://img.shields.io/badge/python-3.10%7C3.11%7C3.12%7C3.13-000000?logo=python>
 [python-link]:
 <https://www.python.org>
