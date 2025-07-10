@@ -167,19 +167,17 @@ def _handle_successful_submission(form_data: dict[str, Any]) -> None:
 # Helper functions for object creation with references
 def create_metro_location_step(form_data: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
     """Create a metro location and store it in context for later reference.
-    
+
     Args:
         form_data: Form data containing location information
         context: Workflow context for storing references
-        
+
     Returns:
         dict[str, Any]: Step result with created object information
-        
-    Raises:
-        ValueError: If required form data is missing
+
     """
     branch_name = context.get("branch_name", "main")
-    
+
     metro = create_and_save(
         LocationMetro,
         {
@@ -189,11 +187,11 @@ def create_metro_location_step(form_data: dict[str, Any], context: dict[str, Any
         },
         branch=branch_name,
     )
-    
+
     # Store the created object in context for later use
     context["metro_location"] = metro
     context["metro_location_id"] = metro.id
-    
+
     return {
         "status": "created",
         "node_id": str(metro.id),
@@ -205,44 +203,42 @@ def create_metro_location_step(form_data: dict[str, Any], context: dict[str, Any
 
 def create_design_topology_step(form_data: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
     """Create a topology design that can reference other objects.
-    
+
     Args:
         form_data: Form data containing design information
         context: Workflow context containing object references
-        
+
     Returns:
         dict[str, Any]: Step result with created object information
-        
-    Raises:
-        ValueError: If referenced objects are not available
+
     """
     branch_name = context.get("branch_name", "main")
-    
+
     # Optional: Get metro location from context if it exists
     metro_location_id = context.get("metro_location_id")
-    
+
     design_data = {
         "name": f"{form_data['dc_name']}-{form_data['design']}",
         "description": f"Topology design for {form_data['dc_name']} using {form_data['design']} pattern",
         "type": "DC",
     }
-    
+
     # Add location reference if available
     if metro_location_id:
         design_data["location"] = metro_location_id
-    
+
     design = create_and_save(
         DesignTopology,
         design_data,
         branch=branch_name,
     )
-    
+
     # Store the design in context
     context["topology_design"] = design
     context["topology_design_id"] = design.id
-    
+
     location_info = f" at {context.get('metro_location', {}).get('name', 'unknown location')}" if metro_location_id else ""
-    
+
     return {
         "status": "created",
         "node_id": str(design.id),
