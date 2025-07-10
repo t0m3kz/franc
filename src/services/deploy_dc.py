@@ -8,7 +8,7 @@ from typing import Any, NamedTuple
 import streamlit as st
 
 from help_loader import get_cached_help_content
-from infrahub import create_branch
+from infrahub import create_and_save, create_branch
 from schema_protocols import DesignTopology, LocationMetro
 from utils import select_options
 from validation import (
@@ -162,6 +162,94 @@ def _handle_successful_submission(form_data: dict[str, Any]) -> None:
     except ValueError as e:
         st.error(f"❌ **Deployment failed:** {e}")
         st.info("💡 Please check the error details above and try again.")
+
+
+# Helper functions for object creation with references
+def create_metro_location_step(form_data: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
+    """Create a metro location and store it in context for later reference.
+    
+    Args:
+        form_data: Form data containing location information
+        context: Workflow context for storing references
+        
+    Returns:
+        dict[str, Any]: Step result with created object information
+        
+    Raises:
+        ValueError: If required form data is missing
+    """
+    branch_name = context.get("branch_name", "main")
+    
+    metro = create_and_save(
+        LocationMetro,
+        {
+            "name": form_data["location"],
+            "shortname": form_data["location"][:10],
+            "description": f"Metro location for {form_data['dc_name']}",
+        },
+        branch=branch_name,
+    )
+    
+    # Store the created object in context for later use
+    context["metro_location"] = metro
+    context["metro_location_id"] = metro.id
+    
+    return {
+        "status": "created",
+        "node_id": str(metro.id),
+        "name": metro.name,
+        "message": f"Created metro location: {metro.name}",
+        "object_reference": metro.id,  # Store reference for later use
+    }
+
+
+def create_design_topology_step(form_data: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
+    """Create a topology design that can reference other objects.
+    
+    Args:
+        form_data: Form data containing design information
+        context: Workflow context containing object references
+        
+    Returns:
+        dict[str, Any]: Step result with created object information
+        
+    Raises:
+        ValueError: If referenced objects are not available
+    """
+    branch_name = context.get("branch_name", "main")
+    
+    # Optional: Get metro location from context if it exists
+    metro_location_id = context.get("metro_location_id")
+    
+    design_data = {
+        "name": f"{form_data['dc_name']}-{form_data['design']}",
+        "description": f"Topology design for {form_data['dc_name']} using {form_data['design']} pattern",
+        "type": "DC",
+    }
+    
+    # Add location reference if available
+    if metro_location_id:
+        design_data["location"] = metro_location_id
+    
+    design = create_and_save(
+        DesignTopology,
+        design_data,
+        branch=branch_name,
+    )
+    
+    # Store the design in context
+    context["topology_design"] = design
+    context["topology_design_id"] = design.id
+    
+    location_info = f" at {context.get('metro_location', {}).get('name', 'unknown location')}" if metro_location_id else ""
+    
+    return {
+        "status": "created",
+        "node_id": str(design.id),
+        "name": design.name,
+        "message": f"Created topology design: {design.name}{location_info}",
+        "object_reference": design.id,
+    }
 
 
 def deploy_dc_form() -> None:
