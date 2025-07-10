@@ -13,7 +13,6 @@ from fast_depends import Depends, inject
 from infrahub_sdk import Config, InfrahubClientSync
 
 if TYPE_CHECKING:
-    from infrahub_sdk.branch import BranchData
     from infrahub_sdk.client import SchemaTypeSync
 
 
@@ -131,28 +130,46 @@ def get_dropdown_options(
 ) -> list[str]:
     """Get dropdown options for a given attribute.
 
-    Raises:
-        Exception: If the attribute is not found.
+    Args:
+        kind: The schema kind to get options for.
+        attribute_name: The name of the attribute to get options for.
+        branch: The branch to use for schema lookup.
+        client: The Infrahub client to use.
 
     Returns:
         A list of dropdown options for the given attribute.
 
+    Raises:
+        AttributeNotFoundError: If the attribute is not found.
+        ValueError: If schema retrieval fails.
+
     """
-    # Get schema for this kind
+    try:
+        # Get schema for this kind
+        schema = client.schema.get(kind=kind, branch=branch)
+        if not schema:
+            msg = f"Schema kind '{kind}' not found in branch '{branch}'"
+            raise ValueError(msg)  # noqa: TRY301
 
-    schema = client.schema.get(kind=kind, branch=branch)
+        # Find desired attribute
+        matched_attribute = next((att for att in schema.attributes if att.name == attribute_name), None)
 
-    # Find desired attribute
-    matched_attribute = next((att for att in schema.attributes if att.name == attribute_name), None)
+        if matched_attribute is None:
+            msg = f"Can't find attribute `{attribute_name}` for kind `{kind}`"
+            raise AttributeNotFoundError(msg)  # noqa: TRY301
 
-    if matched_attribute is None:
-        msg = f"Can't find attribute `{attribute_name}` for kind `{kind}`"
-        raise Exception(msg)
-    return [choice["name"] for choice in matched_attribute.choices]
+        # Return choice names if available
+        return [choice["name"] for choice in matched_attribute.choices] if matched_attribute.choices else []
+
+    except AttributeNotFoundError:
+        raise
+    except Exception as e:
+        msg = f"Failed to get dropdown options for {kind}.{attribute_name}: {e}"
+        raise ValueError(msg) from e
 
 
 @inject
-def create_branch(branch_name: str, client: InfrahubClientSync = Depends(get_client)) -> BranchData:
+def create_branch(branch_name: str, client: InfrahubClientSync = Depends(get_client)) -> dict[str, str]:
     """Create a new branch.
 
     Args:
@@ -160,7 +177,20 @@ def create_branch(branch_name: str, client: InfrahubClientSync = Depends(get_cli
         client: The Infrahub client to use.
 
     Returns:
-        The created branch.
+        Dictionary with branch information.
+
+    Raises:
+        ValueError: If branch creation fails.
 
     """
-    return client.branch.create(branch_name=branch_name, sync_with_git=False)
+    try:
+        result = client.branch.create(branch_name=branch_name, sync_with_git=False)
+        # Convert result to a simple dict to avoid Pydantic model issues
+        return {
+            "name": getattr(result, "name", branch_name),
+            "status": "created",
+            "sync_with_git": "false",  # Use string instead of boolean
+        }
+    except Exception as e:
+        msg = f"Failed to create branch '{branch_name}': {e}"
+        raise ValueError(msg) from e

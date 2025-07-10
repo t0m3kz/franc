@@ -132,27 +132,23 @@ def get_pop_form_data() -> dict[str, Any]:
     }
 
 
-def _create_success_callback(form_data: dict[str, Any]) -> callable:
-    """Create a success callback function for the PoP deployment workflow.
+def _show_success_message(form_data: dict[str, Any]) -> None:
+    """Display PoP deployment success message.
 
-    Returns:
-        callable: A function that displays the PoP deployment success message.
+    Args:
+        form_data: The validated form data containing PoP configuration
 
     """
+    st.success(
+        f"✅ **Success!** PoP '{form_data['pop_name']}' will be deployed at {form_data['location']} "
+        f"with design '{form_data['design']}' and provider '{form_data['provider']}'. "
+        f"**Change Number:** {form_data['change_number']}",
+    )
 
-    def success_callback() -> None:
-        st.success(
-            f"✅ **Success!** PoP '{form_data['pop_name']}' will be deployed at {form_data['location']} "
-            f"with design '{form_data['design']}' and provider '{form_data['provider']}'. "
-            f"**Change Number:** {form_data['change_number']}",
-        )
-
-        st.balloons()
-        st.snow()
-        next_steps = get_cached_help_content("pop-next-steps")
-        st.markdown(next_steps)
-
-    return success_callback
+    st.balloons()
+    st.snow()
+    next_steps = get_cached_help_content("pop-next-steps")
+    st.markdown(next_steps)
 
 
 def _handle_validation_errors(errors: list[str]) -> None:
@@ -167,7 +163,7 @@ def _handle_validation_errors(errors: list[str]) -> None:
 def _handle_successful_submission(form_data: dict[str, Any]) -> None:
     """Handle successful form submission."""
     # Show success message directly
-    _create_success_callback(form_data)()
+    _show_success_message(form_data)
 
     # Reset form state
     _reset_deploy_pop_form_state()

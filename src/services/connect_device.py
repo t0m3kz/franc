@@ -237,31 +237,28 @@ def _update_all_dynamic_states() -> None:
         update_dynamic_field_state(field)
 
 
-def _create_success_callback(form_state: ConnectDeviceFormState, interfaces: InterfaceFormState) -> callable:
-    """Create a success callback function for the workflow.
+def _show_success_message(form_state: ConnectDeviceFormState, interfaces: InterfaceFormState) -> None:
+    """Display success message and interface summary.
 
-    Returns:
-        callable: A function that displays success message and interface summary.
+    Args:
+        form_state: The validated form state data
+        interfaces: The interface configuration data
 
     """
+    summary = generate_interface_summary(interfaces)
 
-    def success_callback() -> None:
-        summary = generate_interface_summary(interfaces)
+    st.success(
+        f"✅ **Success!** Connection request for '{form_state.device_name}' "
+        f"({form_state.device_type}) at '{form_state.location}' has been submitted. "
+        f"**Change Number:** {form_state.change_number}",
+    )
 
-        st.success(
-            f"✅ **Success!** Connection request for '{form_state.device_name}' "
-            f"({form_state.device_type}) at '{form_state.location}' has been submitted. "
-            f"**Change Number:** {form_state.change_number}",
-        )
+    st.balloons()
+    st.snow()
+    st.markdown(f"**Configured Interfaces:** {summary}")
 
-        st.balloons()
-        st.snow()
-        st.markdown(f"**Configured Interfaces:** {summary}")
-
-        next_steps = get_cached_help_content("connection-next-steps")
-        st.markdown(next_steps)
-
-    return success_callback
+    next_steps = get_cached_help_content("connection-next-steps")
+    st.markdown(next_steps)
 
 
 def _handle_validation_errors(errors: list[str]) -> None:
@@ -276,7 +273,7 @@ def _handle_validation_errors(errors: list[str]) -> None:
 def _handle_successful_submission(form_state: ConnectDeviceFormState, interfaces: InterfaceFormState) -> None:
     """Handle successful form submission."""
     # Show success message directly
-    _create_success_callback(form_state, interfaces)()
+    _show_success_message(form_state, interfaces)
 
     # Reset form state for next submission
     _reset_connect_device_form_state()

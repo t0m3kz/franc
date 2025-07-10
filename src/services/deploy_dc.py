@@ -8,6 +8,7 @@ from typing import Any, NamedTuple
 import streamlit as st
 
 from help_loader import get_cached_help_content
+from infrahub import create_branch
 from schema_protocols import DesignTopology, LocationMetro
 from utils import select_options
 from validation import (
@@ -15,6 +16,7 @@ from validation import (
     validate_required_field,
     validate_required_selection,
 )
+from workflow_engine import WorkflowEngine
 
 
 class DeployDcFormState(NamedTuple):
@@ -110,27 +112,21 @@ def get_dc_form_data() -> dict[str, Any]:
     }
 
 
-def _create_success_callback(form_data: dict[str, Any]) -> callable:
-    """Create a success callback function for the DC deployment workflow.
+def _show_success_message(form_data: dict[str, Any]) -> None:
+    """Display DC deployment success message.
 
-    Returns:
-        callable: A function that displays the DC deployment success message.
+    Args:
+        form_data: The validated form data containing DC configuration
 
     """
+    st.success(
+        f"**Change Number:** {form_data['change_number']} submited for deployment!",
+    )
 
-    def success_callback() -> None:
-        st.success(
-            f"✅ **Success!** Data Center '{form_data['dc_name']}' will be deployed at "
-            f"{form_data['location']} with design '{form_data['design']}'. "
-            f"**Change Number:** {form_data['change_number']}",
-        )
-
-        st.balloons()
-        st.snow()
-        next_steps = get_cached_help_content("dc-next-steps")
-        st.markdown(next_steps)
-
-    return success_callback
+    st.balloons()
+    st.snow()
+    next_steps = get_cached_help_content("dc-next-steps")
+    st.markdown(next_steps)
 
 
 def _handle_validation_errors(errors: list[str]) -> None:
@@ -143,20 +139,29 @@ def _handle_validation_errors(errors: list[str]) -> None:
 
 
 def _handle_successful_submission(form_data: dict[str, Any]) -> None:
-    """Handle successful form submission."""
-    # Show success message directly
-    _create_success_callback(form_data)()
+    """Handle successful form submission with multi-step Infrahub workflow."""
+    # Create workflow engine for DC deployment
+    workflow = WorkflowEngine("Data Center Deployment")
+    branch_name = f"implement_{form_data.get('change_number', '').lower()}"
 
-    # Reset form state
-    _reset_deploy_dc_form_state()
+    # Add workflow steps - simple and reusable pattern
+    workflow.add_step(
+        "Creating deployment branch",
+        create_branch,
+        branch_name,
+    )
 
-
-def _reset_deploy_dc_form_state() -> None:
-    """Reset the deploy DC form state."""
-    # Reset form fields
-    for key in ["dc_name", "change_number", "location", "design"]:
-        if key in st.session_state:
-            del st.session_state[key]
+    # Execute workflow - only show success if all steps completed successfully
+    try:
+        result = workflow.execute_with_status({})
+        if result.error_count == 0:
+            _show_success_message(form_data)
+        else:
+            st.error(f"❌ **Deployment failed:** {result.error_count} step(s) failed")
+            st.info("💡 Please check the error details above and try again.")
+    except ValueError as e:
+        st.error(f"❌ **Deployment failed:** {e}")
+        st.info("💡 Please check the error details above and try again.")
 
 
 def deploy_dc_form() -> None:
