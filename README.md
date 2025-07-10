@@ -1,5 +1,12 @@
 # FRANC Service Portal
 
+[![Ruff][ruff-badge]][ruff-link]
+[![Python][python-badge]][python-link]
+[![Actions status][github-badge]][github-link]
+[![Coverage Status][coverage-badge]][coverage-link]
+[![GitHub Discussion][github-discussions-badge]][github-discussions-link]
+
+
 A modern, mobile-friendly Streamlit-based network service portal for automating network operations.
 
 ## Quick Start
@@ -76,3 +83,24 @@ uv run ruff format src/
 # Run tests
 uv run pytest
 ```
+
+[ruff-badge]:
+<https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json>
+[ruff-link]:
+(https://github.com/astral-sh/ruff)
+[github-discussions-link]:
+<https://github.com/t0m3kz/franc/discussions/>
+[github-discussions-badge]:
+<https://img.shields.io/static/v1?label=Discussions&message=Ask&color=blue&logo=github>
+[github-badge]:
+<https://github.com/t0m3kz/franc/actions/workflows/main.yml/badge.svg?branch=main>
+[github-link]:
+<https://github.com/t0m3kz/franc/actions/workflows/main.yml>
+[coverage-badge]:
+https://img.shields.io/codecov/c/github/t0m3kz/franc?label=coverage
+[coverage-link]:
+https://codecov.io/gh/t0m3kz/franc
+[python-badge]:
+<https://img.shields.io/badge/python-3.10%7C3.11%7C3.12-000000?logo=python>
+[python-link]:
+<https://www.python.org>
