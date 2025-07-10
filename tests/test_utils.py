@@ -1,0 +1,144 @@
+# Copyright (c) 2024 FRANC Service Portal
+# All rights reserved.
+
+"""Unit tests for utility functions."""
+
+import sys
+from unittest.mock import Mock, patch
+
+import streamlit as st
+
+from src.utils import (
+    dropdown_options,
+    get_dynamic_list,
+    init_dynamic_field_state,
+    select_options,
+    update_dynamic_field_state,
+)
+
+# Mock the infrahub module before importing src.utils
+mock_infrahub = Mock()
+mock_infrahub.InfrahubClientSync = Mock()
+mock_infrahub.get_dropdown_options = Mock()
+mock_infrahub.get_select_options = Mock()
+sys.modules["infrahub"] = mock_infrahub
+
+
+class TestDynamicFieldState:
+    """Test dynamic field state management."""
+
+    @patch("streamlit.session_state", {})
+    def test_init_dynamic_field_state(self):
+        """Test initialization of dynamic field state."""
+        init_dynamic_field_state("test_field", default_count=3, default_value="default")
+
+        assert st.session_state["num_test_field"] == 3
+        assert st.session_state["test_field_values"] == ["default", "default", "default"]
+
+    @patch("streamlit.session_state", {"num_test_field": 2, "test_field_values": ["val1", "val2"]})
+    def test_update_dynamic_field_state_increase(self):
+        """Test updating dynamic field state with increased count."""
+        st.session_state["num_test_field"] = 4
+        update_dynamic_field_state("test_field")
+
+        assert len(st.session_state["test_field_values"]) == 4
+        assert st.session_state["test_field_values"] == ["val1", "val2", "", ""]
+
+    @patch("streamlit.session_state", {"num_test_field": 4, "test_field_values": ["val1", "val2", "val3", "val4"]})
+    def test_update_dynamic_field_state_decrease(self):
+        """Test updating dynamic field state with decreased count."""
+        st.session_state["num_test_field"] = 2
+        update_dynamic_field_state("test_field")
+
+        assert len(st.session_state["test_field_values"]) == 2
+        assert st.session_state["test_field_values"] == ["val1", "val2"]
+
+    @patch("streamlit.session_state", {"num_test_field": 3, "test_field_values": ["val1", "val2", "val3"]})
+    def test_get_dynamic_list(self):
+        """Test getting dynamic list values."""
+        result = get_dynamic_list("test_field")
+
+        assert result == ["val1", "val2", "val3"]
+
+    @patch("streamlit.session_state", {})
+    def test_get_dynamic_list_empty(self):
+        """Test getting dynamic list when not initialized."""
+        result = get_dynamic_list("test_field")
+
+        assert result == []
+
+
+class TestSelectOptions:
+    """Test select options functionality."""
+
+    @patch("src.utils.get_select_options")
+    @patch("streamlit.error")
+    def test_select_options_success(self, mock_error, mock_get_select_options):
+        """Test successful select options retrieval."""
+        mock_get_select_options.return_value = ["option1", "option2", "option3"]
+
+        result = select_options("TestKind")
+
+        assert result == ["option1", "option2", "option3"]
+        mock_get_select_options.assert_called_once()
+        mock_error.assert_not_called()
+
+    @patch("src.utils.get_select_options")
+    @patch("streamlit.error")
+    def test_select_options_connection_error(self, mock_error, mock_get_select_options):
+        """Test select options with connection error."""
+        mock_get_select_options.side_effect = ConnectionError("Connection failed")
+
+        result = select_options("TestKind")
+
+        assert result == []
+        mock_error.assert_called_once()
+
+    @patch("src.utils.get_select_options")
+    @patch("streamlit.error")
+    def test_select_options_runtime_error(self, mock_error, mock_get_select_options):
+        """Test select options with runtime error."""
+        mock_get_select_options.side_effect = RuntimeError("Runtime error")
+
+        result = select_options("TestKind")
+
+        assert result == []
+        mock_error.assert_called_once()
+
+
+class TestDropdownOptions:
+    """Test dropdown options functionality."""
+
+    @patch("src.utils.get_dropdown_options")
+    @patch("streamlit.error")
+    def test_dropdown_options_success(self, mock_error, mock_get_dropdown_options):
+        """Test successful dropdown options retrieval."""
+        mock_get_dropdown_options.return_value = ["option1", "option2"]
+
+        result = dropdown_options("TestKind", attribute_name="test_attr")
+
+        assert result == ["option1", "option2"]
+        mock_get_dropdown_options.assert_called_once()
+        mock_error.assert_not_called()
+
+    @patch("src.utils.get_dropdown_options")
+    @patch("streamlit.error")
+    def test_dropdown_options_connection_error(self, mock_error, mock_get_dropdown_options):
+        """Test dropdown options with connection error."""
+        mock_get_dropdown_options.side_effect = ConnectionError("Connection failed")
+
+        result = dropdown_options("TestKind", attribute_name="test_attr")
+
+        assert result == []
+        mock_error.assert_called_once()
+
+    @patch("src.utils.get_dropdown_options")
+    @patch("streamlit.error")
+    def test_dropdown_options_runtime_error(self, mock_error, mock_get_dropdown_options):
+        """Test dropdown options with runtime error."""
+        mock_get_dropdown_options.side_effect = RuntimeError("Runtime error")
+
+        result = dropdown_options("TestKind", attribute_name="test_attr")
+
+        assert result == []
+        mock_error.assert_called_once()

@@ -4,14 +4,14 @@
 """Validation utilities for the Service Portal forms."""
 
 
-def validate_required_field(value: str, field_name: str) -> str | None:
+def validate_required_field(value: str | None, field_name: str) -> str | None:
     """Validate that a required field is not empty.
 
     Returns:
         Error message if field is empty, None otherwise.
 
     """
-    if not value.strip():
+    if value is None or not value.strip():
         return f"{field_name} is required."
     return None
 
@@ -23,7 +23,7 @@ def validate_required_selection(options: list, selected_value: str, field_name: 
         Error message if selection is required but not provided, None otherwise.
 
     """
-    if options and not selected_value:
+    if options and (not selected_value or selected_value not in options):
         return f"{field_name} is required."
     return None
 
@@ -37,7 +37,9 @@ def validate_unique_names(names: list[str], field_name: str = "Names") -> str | 
     """
     names_clean = [n.strip() for n in names if n.strip()]
     if len(names_clean) != len(set(names_clean)):
-        return f"{field_name} must be unique and non-empty."
+        duplicates = [name for name in set(names_clean) if names_clean.count(name) > 1]
+        plural_field = field_name if field_name.endswith("s") else f"{field_name}s"
+        return f"{plural_field} must be unique. Duplicates found: {', '.join(sorted(duplicates))}"
     return None
 
 
@@ -50,7 +52,8 @@ def validate_minimum_count(items: list, min_count: int, field_name: str) -> str 
     """
     valid_items = [item for item in items if str(item).strip()]
     if len(valid_items) < min_count:
-        return f"At least {min_count} {field_name.lower()} {'is' if min_count == 1 else 'are'} required."
+        plural_field = field_name if min_count == 1 else f"{field_name}s"
+        return f"At least {min_count} {plural_field} {'is' if min_count == 1 else 'are'} required."
     return None
 
 
@@ -61,7 +64,7 @@ def collect_validation_errors(*validators: str | None) -> list[str]:
         List of validation error messages.
 
     """
-    return [error for error in validators if error is not None]
+    return [error for error in validators if error is not None and error.strip()]
 
 
 def validate_vpc_groups(vpcs: list[bool], vpc_groups: list[str]) -> list[str]:

@@ -66,6 +66,23 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "src/schema_protocols.py" = ["D101"]
+"tests/**/*.py" = [
+    "S101",   # Use of assert (normal in pytest)
+    "PLR0913", # Too many arguments (common in test fixtures)
+    "PLR6301", # Method could be a function (common in test classes)
+    "ANN001",  # Missing type annotation for function argument
+    "ANN201",  # Missing return type annotation
+    "PLR0915", # Too many statements
+    "PLR2004", # Magic value used in comparison
+    "D100",    # Missing docstring in public module
+    "D101",    # Missing docstring in public class
+    "D102",    # Missing docstring in public method
+    "D103",    # Missing docstring in public function
+    "PLR0124", # Name compared with itself
+    "SLF001",  # Private member accessed
+    "DOC201",
+    "CPY001",
+]
 
 
 #https://docs.astral.sh/ruff/formatter/black/
