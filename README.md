@@ -30,6 +30,7 @@ cp .env.example .env
 2. Configure your Infrahub connection in `.env`:
 ```bash
 INFRAHUB_ADDRESS=http://your-infrahub-server:8000
+INFRAHUB_API_TOKEN="06438eb2-8019-4776-878c-0941b1f1d1ec"
 ```
 
 3. Run the application:
