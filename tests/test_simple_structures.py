@@ -11,6 +11,7 @@ class TestDataStructures:
 
     def test_basic_dataclass_creation(self):
         """Test creating and using basic dataclasses."""
+
         @dataclass
         class TestDevice:
             display_name: str
@@ -25,6 +26,7 @@ class TestDataStructures:
 
     def test_dataclass_with_optional_fields(self):
         """Test dataclass with optional fields."""
+
         @dataclass
         class TestInterface:
             display_name: str
@@ -45,6 +47,7 @@ class TestDataStructures:
 
     def test_attribute_types(self):
         """Test that attributes have the correct types."""
+
         @dataclass
         class TestLocation:
             display_name: str
@@ -59,6 +62,7 @@ class TestDataStructures:
 
     def test_dataclass_equality(self):
         """Test dataclass equality comparison."""
+
         @dataclass
         class TestItem:
             name: str
@@ -74,6 +78,7 @@ class TestDataStructures:
 
     def test_dataclass_representation(self):
         """Test dataclass string representation."""
+
         @dataclass
         class TestPattern:
             display_name: str

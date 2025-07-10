@@ -7,7 +7,6 @@ requires-python = ">=3.10"
 dependencies = [
     "fast-depends>=2.4.12",
     "infrahub-sdk>=1.11.0",
-    "kafka-python>=2.0.2",
     "polars[pandas]>=1.27.1",
     "pydantic>=2.5.0",
     "streamlit>=1.44.1",

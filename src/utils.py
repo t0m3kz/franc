@@ -26,22 +26,6 @@ class DropdownOptionsKwargs(TypedDict, total=False):
     client: InfrahubClientSync
 
 
-def get_dynamic_list(key: str, default: str, num: int) -> list[str]:
-    """Get or initialize a dynamic list from session state for a given key and length.
-
-    Returns:
-        List of string values from session state.
-
-    """
-    vals = st.session_state.get(f"{key}_values", [])
-    if len(vals) < num:
-        vals += [default] * (num - len(vals))
-    if len(vals) > num:
-        vals = vals[:num]
-    st.session_state[f"{key}_values"] = vals
-    return vals
-
-
 def select_options(kind: type, **kwargs: SelectOptionsKwargs) -> list:
     """Safely get select options and show error if needed.
 
@@ -70,8 +54,46 @@ def dropdown_options(kind: type, **kwargs: DropdownOptionsKwargs) -> list:
         return []
 
 
+def get_dynamic_list(key: str, default: str, num: int) -> list[str]:
+    """Get or initialize a dynamic list from session state for a given key and length.
+
+    This function combines initialization and updating of dynamic field state.
+
+    Args:
+        key: The base key for session state storage
+        default: Default value for new list items
+        num: Required number of items in the list
+
+    Returns:
+        List of string values from session state, properly sized.
+
+    """
+    # Initialize if not exists
+    if f"{key}_values" not in st.session_state:
+        st.session_state[f"{key}_values"] = [default] * num
+        return st.session_state[f"{key}_values"]
+
+    # Get current values and adjust size
+    vals = st.session_state[f"{key}_values"]
+
+    if len(vals) < num:
+        # Extend list with default values
+        vals.extend([default] * (num - len(vals)))
+    elif len(vals) > num:
+        # Truncate list to required size
+        vals = vals[:num]
+
+    # Update session state and return
+    st.session_state[f"{key}_values"] = vals
+    return vals
+
+
 def init_dynamic_field_state(state_key: str, default_count: int = 1, default_value: str = "") -> None:
-    """Initialize session state for a dynamic field list."""
+    """Initialize session state for a dynamic field list.
+
+    Note: This function is kept for backward compatibility.
+    Consider using get_dynamic_list() for new code as it combines init and update.
+    """
     if f"num_{state_key}" not in st.session_state:
         st.session_state[f"num_{state_key}"] = default_count
     if f"{state_key}_values" not in st.session_state:
@@ -79,7 +101,11 @@ def init_dynamic_field_state(state_key: str, default_count: int = 1, default_val
 
 
 def update_dynamic_field_state(state_key: str) -> None:
-    """Update session state for a dynamic field list when count changes."""
+    """Update session state for a dynamic field list when count changes.
+
+    Note: This function is kept for backward compatibility.
+    Consider using get_dynamic_list() for new code as it combines init and update.
+    """
     n = int(st.session_state[f"num_{state_key}"])
     current = st.session_state.get(f"{state_key}_values", [])
     if len(current) < n:

@@ -8,11 +8,6 @@ from typing import Any, NamedTuple
 import streamlit as st
 
 from help_loader import get_cached_help_content
-from kafka_events_helper import (
-    DatacenterDeploymentEventData,
-    TaskExecutionData,
-    handle_datacenter_deployment_workflow,
-)
 from schema_protocols import DesignTopology, LocationMetro
 from utils import select_options
 from validation import (
@@ -148,29 +143,20 @@ def _handle_validation_errors(errors: list[str]) -> None:
 
 
 def _handle_successful_submission(form_data: dict[str, Any]) -> None:
-    """Handle successful form submission using the global Kafka events helper."""
-    # Create success callback
-    success_callback = _create_success_callback(form_data)
+    """Handle successful form submission."""
+    # Show success message directly
+    _create_success_callback(form_data)()
 
-    # Use the global helper to handle the complete workflow
-    event_data = DatacenterDeploymentEventData(
-        change_number=form_data["change_number"],
-        dc_name=form_data["dc_name"],
-        location=form_data["location"],
-        design_pattern=form_data["design"],
-        user_id=None,  # Could be enhanced to include actual user ID
-    )
+    # Reset form state
+    _reset_deploy_dc_form_state()
 
-    task_data = TaskExecutionData(
-        service_name=form_data["dc_name"],
-        change_number=form_data["change_number"],
-    )
 
-    handle_datacenter_deployment_workflow(
-        event_data=event_data,
-        task_data=task_data,
-        success_callback=success_callback,
-    )
+def _reset_deploy_dc_form_state() -> None:
+    """Reset the deploy DC form state."""
+    # Reset form fields
+    for key in ["dc_name", "change_number", "location", "design"]:
+        if key in st.session_state:
+            del st.session_state[key]
 
 
 def deploy_dc_form() -> None:

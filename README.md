@@ -50,8 +50,7 @@ uv run streamlit run src/main.py
 - 🏢 **Data Center Deployment**: Request new DC deployments with location and design selection
 - 🌐 **PoP Deployment**: Point of Presence setup with provider selection  
 - 🔌 **Device Connection**: Network device connection requests with interface configuration
-- 📡 **Kafka Integration**: Event publishing for downstream processing
-- 📱 **Mobile-Friendly**: Responsive design optimized for mobile devices
+-  **Mobile-Friendly**: Responsive design optimized for mobile devices
 - 🔍 **Built-in Help**: Contextual help and validation guidance
 - 🎯 **Modern UI**: Clean, intuitive interface with real-time validation
 
@@ -59,14 +58,12 @@ uv run streamlit run src/main.py
 
 - **Frontend**: Streamlit for interactive web interface
 - **Backend**: Python with Infrahub SDK for network automation
-- **Messaging**: Kafka for event-driven workflows
 - **Validation**: Comprehensive form validation with user guidance
 
 ## Documentation
 
 - [User Guide](docs/user-guide.md)
-- [Developer Guide](docs/developer-guide.md)  
-- [Kafka Integration](docs/kafka-integration.md)
+- [Developer Guide](docs/developer-guide.md)
 
 ## Development
 

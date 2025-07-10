@@ -8,11 +8,6 @@ from typing import Any, NamedTuple
 import streamlit as st
 
 from help_loader import get_cached_help_content, show_help_section
-from kafka_events_helper import (
-    DeviceConnectionEventData,
-    TaskExecutionData,
-    handle_device_connection_workflow,
-)
 from schema_protocols import DcimDeviceType, LocationBuilding
 from utils import (
     get_dynamic_list,
@@ -242,36 +237,6 @@ def _update_all_dynamic_states() -> None:
         update_dynamic_field_state(field)
 
 
-def _prepare_interface_data(interfaces: InterfaceFormState) -> list[dict[str, Any]]:
-    """Prepare interface data for Kafka event publishing.
-
-    Returns:
-        list[dict[str, Any]]: A list of dictionaries containing interface data.
-
-    """
-    return [
-        {
-            "name": interfaces.names[i],
-            "speed": interfaces.speeds[i],
-            "role": interfaces.roles[i],
-            "vpc_group": interfaces.vpc_groups[i] if interfaces.vpc_groups[i] != "none" else None,
-        }
-        for i in range(interfaces.num)
-    ]
-
-
-def _prepare_vpc_groups_data(interfaces: InterfaceFormState) -> list[str] | None:
-    """Prepare vPC groups data for Kafka event publishing.
-
-    Returns:
-        list[str] | None: List of vPC group names or None if no vPC groups configured.
-
-    """
-    return (
-        [g for g in interfaces.vpc_groups if g != "none"] if any(g != "none" for g in interfaces.vpc_groups) else None
-    )
-
-
 def _create_success_callback(form_state: ConnectDeviceFormState, interfaces: InterfaceFormState) -> callable:
     """Create a success callback function for the workflow.
 
@@ -309,37 +274,25 @@ def _handle_validation_errors(errors: list[str]) -> None:
 
 
 def _handle_successful_submission(form_state: ConnectDeviceFormState, interfaces: InterfaceFormState) -> None:
-    """Handle successful form submission using the global Kafka events helper."""
-    # Prepare interface and vPC data
-    interface_data = _prepare_interface_data(interfaces)
-    vpc_groups_data = _prepare_vpc_groups_data(interfaces)
+    """Handle successful form submission."""
+    # Show success message directly
+    _create_success_callback(form_state, interfaces)()
 
-    # Create success callback
-    success_callback = _create_success_callback(form_state, interfaces)
+    # Reset form state for next submission
+    _reset_connect_device_form_state()
 
-    # Create event data
-    event_data = DeviceConnectionEventData(
-        change_number=form_state.change_number,
-        device_name=form_state.device_name,
-        device_type=form_state.device_type,
-        location=form_state.location,
-        interfaces=interface_data,
-        vpc_groups=vpc_groups_data,
-        user_id=None,  # Could be enhanced to include actual user ID
-    )
 
-    # Create task data
-    task_data = TaskExecutionData(
-        service_name=form_state.device_name,
-        change_number=form_state.change_number,
-    )
+def _reset_connect_device_form_state() -> None:
+    """Reset the connect device form state."""
+    # Reset main form fields
+    for key in ["device_name", "change_number", "device_type", "location"]:
+        if key in st.session_state:
+            del st.session_state[key]
 
-    # Use the global helper to handle the complete workflow
-    handle_device_connection_workflow(
-        event_data=event_data,
-        task_data=task_data,
-        success_callback=success_callback,
-    )
+    # Reset interface fields
+    for key in ["num_interfaces", "interfaces_values", "speeds_values", "roles_values", "vpc_groups_values"]:
+        if key in st.session_state:
+            del st.session_state[key]
 
 
 def _render_interface_planning_controls() -> None:

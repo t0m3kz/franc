@@ -10,14 +10,12 @@ FRANC (Streamlit connection and utilities for Infrahub) is a Streamlit-based web
 franc/
 ├── docs/                           # Documentation
 │   ├── user-guide.md              # User documentation
-│   ├── developer-guide.md         # This file
-│   └── kafka-integration.md       # Kafka integration guide
+│   └── developer-guide.md         # This file
 ├── src/                           # Source code
 │   ├── __init__.py
 │   ├── main.py                    # Application entry point
 │   ├── help_loader.py            # Help content management utility
 │   ├── infrahub.py               # Infrahub SDK integration
-│   ├── kafka_integration.py      # Kafka event publishing
 │   ├── schema_protocols.py       # Generated Infrahub protocols
 │   ├── utils.py                  # Generic utility functions
 │   ├── validation.py             # Form validation helpers
@@ -52,7 +50,6 @@ franc/
 - **Infrahub SDK 1.11.0+**: Infrastructure management integration
 - **Polars 1.27.1+**: Data processing (with pandas compatibility)
 - **Fast-Depends 2.4.12+**: Dependency injection framework
-- **Kafka-Python 2.0.2+**: Kafka integration for event publishing
 - **Pydantic 2.5.0+**: Data validation and serialization
 
 ### Development Tools
@@ -63,16 +60,14 @@ franc/
 - **Invoke**: Task management
 - **YAML Lint**: YAML file validation
 
-## Event-Driven Architecture
+## Application Architecture
 
-The application includes Kafka integration to publish service request events for downstream processing. This enables:
+The application follows a modular, service-oriented architecture that provides:
 
-- **Asynchronous Processing**: Service requests can be processed by downstream systems
-- **Audit Trail**: All service requests are logged as structured events
-- **Integration**: Easy integration with automation and monitoring systems
-- **Scalability**: Decoupled architecture for handling high request volumes
-
-See the [Kafka Integration Guide](kafka-integration.md) for detailed configuration and usage information.
+- **Clean Separation**: Each service (connect device, deploy DC, deploy PoP) is self-contained
+- **Reusable Components**: Common utilities for validation, help content, and form handling
+- **Type Safety**: Comprehensive type hints and validation throughout
+- **Maintainability**: Clear code structure with consistent patterns
 
 ## Development Setup
 
