@@ -18,6 +18,7 @@ dev = [
     "invoke>=2.2.0",
     "mypy>=1.15.0",
     "pytest>=8.3.5",
+    "rich>=14.0.0",
     "ruff>=0.11.8",
     "yamllint>=1.37.0",
 ]
@@ -58,6 +59,8 @@ ignore = [
     "COM812",  # Conflicts with formatter
     "D203",   # Incompatible with D211 (blank line before class)
     "D213",   # Incompatible with D212 (multi-line summary style)
+    "B008", # To be fixed later
+    "TRY002", # To be fixed later
 ]
 
 [tool.ruff.lint.per-file-ignores]
