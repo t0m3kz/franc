@@ -151,9 +151,29 @@ def _handle_successful_submission(form_data: dict[str, Any]) -> None:
         branch_name,
     )
 
+    # Example: Add context-aware steps that create objects and reference them later
+    # These use the old pattern (context-based) for object references
+    
+    # Uncomment these lines to add object creation steps with references:
+    # workflow.add_step(
+    #     "Creating metro location",
+    #     create_metro_location_step,
+    #     form_data,
+    #     # This step uses context parameter pattern
+    # )
+    
+    # workflow.add_step(
+    #     "Creating topology design",
+    #     create_design_topology_step,
+    #     form_data,
+    #     # This step references the metro location created in the previous step
+    # )
+
     # Execute workflow - only show success if all steps completed successfully
     try:
-        result = workflow.execute_with_status({})
+        # Initialize context with branch name for reference
+        initial_context = {"branch_name": branch_name}
+        result = workflow.execute_with_status(initial_context)
         if result.error_count == 0:
             _show_success_message(form_data)
         else:
