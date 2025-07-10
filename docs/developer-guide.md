@@ -49,7 +49,6 @@ franc/
 - **Streamlit 1.44.1+**: Web application framework
 - **Infrahub SDK 1.11.0+**: Infrastructure management integration
 - **Polars 1.27.1+**: Data processing (with pandas compatibility)
-- **Fast-Depends 2.4.12+**: Dependency injection framework
 - **Pydantic 2.5.0+**: Data validation and serialization
 
 ### Development Tools

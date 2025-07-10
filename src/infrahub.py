@@ -9,7 +9,6 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING
 
-from fast_depends import Depends, inject
 from infrahub_sdk import Config, InfrahubClientSync
 
 if TYPE_CHECKING:
@@ -45,12 +44,11 @@ def get_client(branch: str = "main") -> InfrahubClientSync:
     return InfrahubClientSync(address=address, config=Config(default_branch=branch))
 
 
-@inject(cast=False)  # type: ignore[call-overload]
 def create_and_save(
     kind: type[SchemaTypeSync],
     data: dict,
     branch: str = "main",
-    client: InfrahubClientSync = Depends(get_client),
+    client: InfrahubClientSync | None = None,
 ) -> SchemaTypeSync:
     """Create a new Infrahub node and save it.
 
@@ -58,12 +56,15 @@ def create_and_save(
         kind: The kind of the node to create.
         data: The data to create the node with.
         branch: The branch to create the node in.
-        client: The Infrahub client to use.
+        client: The Infrahub client to use. If None, creates a new one.
 
     Returns:
         The created Infrahub node.
 
     """
+    if client is None:
+        client = get_client(branch)
+
     infrahub_node = client.create(
         kind=kind,
         branch=branch,
@@ -73,13 +74,12 @@ def create_and_save(
     return infrahub_node
 
 
-@inject(cast=False)  # type: ignore[call-overload]
 def filter_nodes(
     kind: type[SchemaTypeSync],
     filters: dict | None = None,
     include: list[str] | None = None,
     branch: str = "main",
-    client: InfrahubClientSync = Depends(get_client),
+    client: InfrahubClientSync | None = None,
 ) -> list[SchemaTypeSync]:
     """Filter nodes by kind, branch, include and filters.
 
@@ -87,6 +87,9 @@ def filter_nodes(
         A list of nodes.
 
     """
+    if client is None:
+        client = get_client(branch)
+
     filters = filters or {}
     return client.filters(
         kind=kind,
@@ -97,12 +100,11 @@ def filter_nodes(
     )
 
 
-@inject(cast=False)
 def get_select_options(
     kind: type[SchemaTypeSync],
     filters: dict | None = None,
     branch: str = "main",
-    client: InfrahubClientSync = Depends(get_client),
+    client: InfrahubClientSync | None = None,
 ) -> list[dict[str, str]]:
     """Filter nodes by kind, branch, include and filters.
 
@@ -110,6 +112,9 @@ def get_select_options(
         A list of display labels for the nodes.
 
     """
+    if client is None:
+        client = get_client(branch)
+
     filters = filters or {}
     return [
         node.display_label
@@ -121,12 +126,11 @@ def get_select_options(
     ]
 
 
-@inject(cast=False)  # type: ignore[call-overload]
 def get_dropdown_options(
     kind: str | type[SchemaTypeSync],
     attribute_name: str,
     branch: str = "main",
-    client: InfrahubClientSync = Depends(get_client),
+    client: InfrahubClientSync | None = None,
 ) -> list[str]:
     """Get dropdown options for a given attribute.
 
@@ -134,7 +138,7 @@ def get_dropdown_options(
         kind: The schema kind to get options for.
         attribute_name: The name of the attribute to get options for.
         branch: The branch to use for schema lookup.
-        client: The Infrahub client to use.
+        client: The Infrahub client to use. If None, creates a new one.
 
     Returns:
         A list of dropdown options for the given attribute.
@@ -144,6 +148,9 @@ def get_dropdown_options(
         ValueError: If schema retrieval fails.
 
     """
+    if client is None:
+        client = get_client(branch)
+
     try:
         # Get schema for this kind
         schema = client.schema.get(kind=kind, branch=branch)
@@ -168,13 +175,12 @@ def get_dropdown_options(
         raise ValueError(msg) from e
 
 
-@inject
-def create_branch(branch_name: str, client: InfrahubClientSync = Depends(get_client)) -> dict[str, str]:
+def create_branch(branch_name: str, client: InfrahubClientSync | None = None) -> dict[str, str]:
     """Create a new branch.
 
     Args:
         branch_name: The name of the branch to create.
-        client: The Infrahub client to use.
+        client: The Infrahub client to use. If None, creates a new one.
 
     Returns:
         Dictionary with branch information.
@@ -183,6 +189,9 @@ def create_branch(branch_name: str, client: InfrahubClientSync = Depends(get_cli
         ValueError: If branch creation fails.
 
     """
+    if client is None:
+        client = get_client()
+
     try:
         result = client.branch.create(branch_name=branch_name, sync_with_git=False)
         # Convert result to a simple dict to avoid Pydantic model issues

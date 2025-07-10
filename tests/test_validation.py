@@ -2,6 +2,8 @@
 
 from src.validation import (
     collect_validation_errors,
+    validate_ip_subnet,
+    validate_ip_subnet_optional,
     validate_minimum_count,
     validate_required_field,
     validate_required_selection,
@@ -146,3 +148,71 @@ class TestCollectValidationErrors:
         """Test that empty strings are ignored."""
         result = collect_validation_errors("Error 1", "", "Error 3")
         assert result == ["Error 1", "Error 3"]
+
+
+class TestValidateIpSubnet:
+    """Test cases for validate_ip_subnet function."""
+
+    def test_valid_ipv4_subnet(self):
+        """Test that valid IPv4 subnets pass validation."""
+        result = validate_ip_subnet("192.168.1.0/24", "Customer Subnet")
+        assert result is None
+
+    def test_valid_ipv6_subnet(self):
+        """Test that valid IPv6 subnets pass validation."""
+        result = validate_ip_subnet("2001:db8::/32", "Customer Subnet")
+        assert result is None
+
+    def test_empty_subnet(self):
+        """Test that empty subnet fails validation."""
+        result = validate_ip_subnet("", "Customer Subnet")
+        assert result == "Customer Subnet is required"
+
+    def test_none_subnet(self):
+        """Test that None subnet fails validation."""
+        result = validate_ip_subnet(None, "Customer Subnet")
+        assert result == "Customer Subnet is required"
+
+    def test_invalid_subnet(self):
+        """Test that invalid subnet fails validation."""
+        result = validate_ip_subnet("invalid", "Customer Subnet")
+        assert result == "Customer Subnet must be a valid IP subnet (e.g., 192.168.1.0/24)"
+
+    def test_whitespace_only_subnet(self):
+        """Test that whitespace-only subnet fails validation."""
+        result = validate_ip_subnet("   ", "Customer Subnet")
+        assert result == "Customer Subnet is required"
+
+    def test_subnet_with_whitespace(self):
+        """Test that subnet with surrounding whitespace passes validation."""
+        result = validate_ip_subnet("  192.168.1.0/24  ", "Customer Subnet")
+        assert result is None
+
+
+class TestValidateIpSubnetOptional:
+    """Test cases for validate_ip_subnet_optional function."""
+
+    def test_valid_ipv4_subnet(self):
+        """Test that valid IPv4 subnets pass validation."""
+        result = validate_ip_subnet_optional("192.168.1.0/24", "Public Subnet")
+        assert result is None
+
+    def test_empty_subnet(self):
+        """Test that empty subnet passes validation (optional)."""
+        result = validate_ip_subnet_optional("", "Public Subnet")
+        assert result is None
+
+    def test_none_subnet(self):
+        """Test that None subnet passes validation (optional)."""
+        result = validate_ip_subnet_optional(None, "Public Subnet")
+        assert result is None
+
+    def test_invalid_subnet(self):
+        """Test that invalid subnet fails validation."""
+        result = validate_ip_subnet_optional("invalid", "Public Subnet")
+        assert result == "Public Subnet must be a valid IP subnet (e.g., 192.168.1.0/24)"
+
+    def test_whitespace_only_subnet(self):
+        """Test that whitespace-only subnet passes validation (optional)."""
+        result = validate_ip_subnet_optional("   ", "Public Subnet")
+        assert result is None

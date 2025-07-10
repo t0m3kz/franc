@@ -5,7 +5,6 @@ description = "Streamlit connection and utilities for Infrahub"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "fast-depends>=2.4.12",
     "infrahub-sdk>=1.11.0",
     "polars[pandas]>=1.27.1",
     "pydantic>=2.5.0",
@@ -17,14 +16,12 @@ dev = [
     "invoke>=2.2.0",
     "mypy>=1.15.0",
     "pytest>=8.3.5",
-    "pytest-asyncio>=1.0.0",
     "rich>=14.0.0",
     "ruff>=0.11.8",
     "yamllint>=1.37.0",
 ]
 
 [tool.pytest.ini_options]
-asyncio_mode = "auto"
 testpaths = ["tests"]
 filterwarnings = []
 addopts = "-vs"

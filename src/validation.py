@@ -7,6 +7,7 @@ This module provides a comprehensive set of validation functions for form fields
 supporting type-safe validation with consistent error messaging and performance optimization.
 """
 
+import ipaddress
 from collections import Counter
 
 # Constants for validation
@@ -186,3 +187,65 @@ def validate_vpc_groups(vpcs: list[bool], vpc_groups: list[str]) -> list[str]:
 
     # Return groups with insufficient members
     return [group_name for group_name, count in vpc_group_counts.items() if count < MIN_VPC_GROUP_MEMBERS]
+
+
+def validate_ip_subnet(value: str | None, field_name: str) -> str | None:
+    """Validate that a field contains a valid IP subnet/network.
+
+    Args:
+        value: The field value to validate (can be None or string)
+        field_name: The name of the field being validated (for error messages)
+
+    Returns:
+        str | None: Error message if validation fails, None if valid
+
+    Examples:
+        >>> validate_ip_subnet("192.168.1.0/24", "Customer Subnet")
+        None
+        >>> validate_ip_subnet("invalid", "Customer Subnet")
+        'Customer Subnet must be a valid IP subnet (e.g., 192.168.1.0/24)'
+        >>> validate_ip_subnet("", "Customer Subnet")
+        'Customer Subnet is required'
+
+    """
+    if value is None or not value.strip():
+        return f"{field_name} is required"
+
+    try:
+        # Try to parse as IP network
+        ipaddress.ip_network(value.strip(), strict=False)
+    except ValueError:
+        return f"{field_name} must be a valid IP subnet (e.g., 192.168.1.0/24)"
+    else:
+        return None
+
+
+def validate_ip_subnet_optional(value: str | None, field_name: str) -> str | None:
+    """Validate that a field contains a valid IP subnet/network, allowing empty values.
+
+    Args:
+        value: The field value to validate (can be None or string)
+        field_name: The name of the field being validated (for error messages)
+
+    Returns:
+        str | None: Error message if validation fails, None if valid or empty
+
+    Examples:
+        >>> validate_ip_subnet_optional("192.168.1.0/24", "Public Subnet")
+        None
+        >>> validate_ip_subnet_optional("", "Public Subnet")
+        None
+        >>> validate_ip_subnet_optional("invalid", "Public Subnet")
+        'Public Subnet must be a valid IP subnet (e.g., 192.168.1.0/24)'
+
+    """
+    if value is None or not value.strip():
+        return None
+
+    try:
+        # Try to parse as IP network
+        ipaddress.ip_network(value.strip(), strict=False)
+    except ValueError:
+        return f"{field_name} must be a valid IP subnet (e.g., 192.168.1.0/24)"
+    else:
+        return None
