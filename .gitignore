@@ -12,5 +12,5 @@ wheels/
 .env.example
 .pytest_cache/
 .ruff_cache/
-
+.dev/
 
