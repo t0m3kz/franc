@@ -1,0 +1,20 @@
+---
+# yamllint disable rule:line-length
+x-franc-config: &franc_config
+  INFRAHUB_ADDRESS: "http://infrahub-server:8000"
+  INFRAHUB_API_TOKEN: "06438eb2-8019-4776-878c-0941b1f1d1ec"
+
+services:
+  franc:
+    build:
+      dockerfile: Dockerfile
+    environment:
+      <<: *franc_config
+    ports:
+      - 8501:8501
+    networks:
+      - infrahub_default
+networks:
+  infrahub_default:
+    external: true
+    name: infrahub_default
