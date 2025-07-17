@@ -2,12 +2,13 @@
 # Copyright (c) 2024 FRANC Service Portal
 # All rights reserved.
 """Unit tests for utils.py."""
+import sys
+from pathlib import Path
 from unittest.mock import MagicMock
 
-import sys
-import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
+sys.path.insert(0, str((Path(__file__).parent / ".." / "src").resolve()))
 import utils
+
 
 def test_get_dynamic_list_initializes(monkeypatch):
     mock_st = MagicMock()
