@@ -5,10 +5,10 @@
 
 import streamlit as st
 
-from help_loader import show_help_section
 from services.connect_device import connect_device_form
 from services.deploy_dc import deploy_dc_form
 from services.deploy_pop import deploy_pop_form
+from utils import show_help_section
 
 st.set_page_config(page_title="Service Portal", layout="centered", page_icon="🛠️")
 

@@ -7,16 +7,13 @@ from typing import Any, NamedTuple
 
 import streamlit as st
 
-from help_loader import get_cached_help_content
-from infrahub import create_branch
-from schema_protocols import DesignTopology, LocationMetro
-from utils import select_options
+from infrahub import create_and_save, create_branch
+from schema_protocols import DesignTopology, IpamPrefix, LocationMetro, TopologyDataCenter
+from utils import handle_validation_errors, select_options, show_help_section
 from validation import (
     collect_validation_errors,
     validate_required_field,
-    validate_required_selection,
 )
-from workflow_engine import WorkflowEngine
 
 
 class DeployDcFormState(NamedTuple):
@@ -24,10 +21,12 @@ class DeployDcFormState(NamedTuple):
 
     change_number: str
     dc_name: str
-    location_options: list[Any]
     location: str
-    design_options: list[Any]
     design: str
+    management: str
+    technical: str
+    customer: str
+    public: str
 
 
 def validate_data_center_form(state: DeployDcFormState) -> list[str]:
@@ -40,8 +39,9 @@ def validate_data_center_form(state: DeployDcFormState) -> list[str]:
     return collect_validation_errors(
         validate_required_field(state.change_number, "Change Number"),
         validate_required_field(state.dc_name, "Data Center Name"),
-        validate_required_selection(state.location_options, state.location, "Location"),
-        validate_required_selection(state.design_options, state.design, "Design Pattern"),
+        validate_required_field(state.management, "Management Pool"),
+        validate_required_field(state.technical, "Technical Pool"),
+        validate_required_field(state.customer, "Customer Pool"),
     )
 
 
@@ -70,98 +70,131 @@ def get_dc_form_data() -> dict[str, Any]:
         placeholder="e.g., NYC-Main-DC",
     )
 
+    location = None
     if location_options:
-        location = st.selectbox(
+        location_label_to_id = {str(opt): getattr(opt, "id", str(opt)) for opt in location_options}
+        location_label = st.selectbox(
             "Location *",
-            location_options,
+            list(location_label_to_id.keys()),
             key="dc_location",
             help="Select the metro area where the data center will be deployed. This determines network connectivity and regional settings.",
         )
-    else:
-        location = st.text_input(
-            "Location * (Manual Entry)",
-            key="dc_location_manual",
-            help="Enter the metro area manually. Contact support if location options are not loading.",
-            placeholder="e.g., New York, London, Tokyo",
-        )
-        st.info("💡 Location options are not available. Using manual entry mode.")
+        location = location_label_to_id[location_label]
 
+    design = None
     if design_options:
-        design = st.selectbox(
+        design_label_to_id = {str(opt): getattr(opt, "id", str(opt)) for opt in design_options}
+        design_label = st.selectbox(
             "Design Pattern *",
-            design_options,
+            list(design_label_to_id.keys()),
             key="dc_design",
             help="Choose the infrastructure design template. Different patterns provide varying levels of redundancy, capacity, and features.",
         )
-    else:
-        design = st.text_input(
-            "Design Pattern * (Manual Entry)",
-            key="dc_design_manual",
-            help="Enter the design pattern manually. Common patterns: 'Standard', 'High-Availability', 'Edge'.",
-            placeholder="e.g., Standard, High-Availability",
-        )
-        st.info("💡 Design pattern options are not available. Using manual entry mode.")
+        design = design_label_to_id[design_label]
+
+    management = st.text_input(
+        "Management Pool *",
+        key="dc_management_pool",
+        help="Enter the management IP prefix/subnet for the data center (required).",
+        placeholder="e.g., 10.0.0.0/24",
+    )
+
+    technical = st.text_input(
+        "Technical Pool *",
+        key="dc_technical_pool",
+        help="Enter the technical IP prefix/subnet for the data center (required).",
+        placeholder="e.g., 10.0.1.0/24",
+    )
+
+    customer = st.text_input(
+        "Customer Pool *",
+        key="dc_customer_pool",
+        help="Enter the customer IP prefix/subnet for the data center (required).",
+        placeholder="e.g., 10.0.2.0/24",
+    )
+
+    public = st.text_input(
+        "Public Pool *",
+        key="dc_public_pool",
+        help="Enter the public IP prefix/subnet for the data center (required).",
+        placeholder="e.g., 10.0.3.0/24",
+    )
 
     return {
         "change_number": change_number,
         "dc_name": dc_name,
-        "location_options": location_options,
         "location": location,
-        "design_options": design_options,
         "design": design,
+        "management": management,
+        "technical": technical,
+        "customer": customer,
+        "public": public,
     }
-
-
-def _show_success_message(form_data: dict[str, Any]) -> None:
-    """Display DC deployment success message.
-
-    Args:
-        form_data: The validated form data containing DC configuration
-
-    """
-    st.success(
-        f"**Change Number:** {form_data['change_number']} submited for deployment!",
-    )
-
-    st.balloons()
-    st.snow()
-    next_steps = get_cached_help_content("dc-next-steps")
-    st.markdown(next_steps)
-
-
-def _handle_validation_errors(errors: list[str]) -> None:
-    """Handle and display validation errors."""
-    st.error("❌ **Please fix the following issues:**")
-    for err in errors:
-        st.error(f"• {err}")
-    validation_tips = get_cached_help_content("validation-tips")
-    st.markdown(f"💡 {validation_tips}")
 
 
 def _handle_successful_submission(form_data: dict[str, Any]) -> None:
     """Handle successful form submission with multi-step Infrahub workflow."""
-    # Create workflow engine for DC deployment
-    workflow = WorkflowEngine("Data Center Deployment")
     branch_name = f"implement_{form_data.get('change_number', '').lower()}"
+    prefixes = [
+        {
+            "prefix": form_data["management"],
+            "status": "active",
+            "role": "management",
+        },
+        {
+            "prefix": form_data["technical"],
+            "status": "active",
+            "role": "technical",
+        },
+        {
+            "prefix": form_data["customer"],
+            "status": "active",
+            "role": "customer",
+        },
+    ]
 
-    # Add workflow steps - simple and reusable pattern
-    workflow.add_step(
-        "Creating deployment branch",
-        create_branch,
-        branch_name,
-    )
+    if form_data["public"]:
+        prefixes.append(
+            {
+                "prefix": form_data["public"],
+                "status": "active",
+                "role": "public",
+            },
+        )
 
-    # Execute workflow - only show success if all steps completed successfully
-    try:
-        result = workflow.execute_with_status({})
-        if result.error_count == 0:
-            _show_success_message(form_data)
-        else:
-            st.error(f"❌ **Deployment failed:** {result.error_count} step(s) failed")
-            st.info("💡 Please check the error details above and try again.")
-    except ValueError as e:
-        st.error(f"❌ **Deployment failed:** {e}")
-        st.info("💡 Please check the error details above and try again.")
+    st.info(f"Creating deployment branch: {branch_name}")
+    create_branch(branch_name)
+
+    st.info("Creating necessary subnets")
+    subnet_ids = {}
+    for prefix in prefixes:
+        result = create_and_save(
+            kind=IpamPrefix,
+            data=prefix,
+            branch=branch_name,
+        )
+        subnet_ids[prefix["role"]] = result.id
+        st.success(f"✅ Creating subnet for role: {prefix['role']} with prefix: {prefix['prefix']}")
+
+    st.info("Creating topology data center object...")
+    topology_data = {
+        "name": form_data["dc_name"],
+        "description": f"Auto-generated topology for {form_data['dc_name']}",
+        "strategy": "ospf-ibgp",
+        "provider": {"hfid": "Technology Partner"},  # Placeholder for provider
+        "design": {"hfid": form_data["design"]},
+        "location": {"hfid": [form_data["location"]]},
+        "management_subnet": subnet_ids.get("management"),
+        "customer_subnet": subnet_ids.get("customer"),
+        "technical_subnet": subnet_ids.get("technical"),
+        "public_subnet": subnet_ids.get("public"),
+        "member_of_groups": [{"hfid": "topologies_dc"}]
+    }
+    result = create_and_save(kind=TopologyDataCenter, data=topology_data, branch=branch_name)
+    st.success("✅ All steps completed. Data Center deployment workflow finished.")
+    st.balloons()
+    st.snow()
+    show_help_section("Next steps", "dc-next-steps")
 
 
 def deploy_dc_form() -> None:
@@ -169,8 +202,7 @@ def deploy_dc_form() -> None:
     st.subheader("Deploy Data Center")
 
     # Form instructions
-    instructions = get_cached_help_content("deploy-dc-instructions")
-    st.markdown(f"📋 {instructions}")
+    show_help_section("Deployment Instructions", "deploy-dc-instructions", icon="📋")
 
     with st.form("deploy_data_center_form"):
         form_data = get_dc_form_data()
@@ -182,6 +214,6 @@ def deploy_dc_form() -> None:
             errors = validate_data_center_form(form_state)
 
             if errors:
-                _handle_validation_errors(errors)
+                handle_validation_errors(errors)
             else:
                 _handle_successful_submission(form_data)

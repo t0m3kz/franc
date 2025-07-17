@@ -7,9 +7,8 @@ from typing import Any, NamedTuple
 
 import streamlit as st
 
-from help_loader import get_cached_help_content
 from schema_protocols import DesignTopology, LocationMetro, OrganizationProvider
-from utils import select_options
+from utils import select_options, show_help_section
 from validation import (
     collect_validation_errors,
     validate_required_field,
@@ -147,7 +146,7 @@ def _show_success_message(form_data: dict[str, Any]) -> None:
 
     st.balloons()
     st.snow()
-    next_steps = get_cached_help_content("pop-next-steps")
+    next_steps = show_help_section("pop-next-steps")
     st.markdown(next_steps)
 
 
@@ -156,8 +155,6 @@ def _handle_validation_errors(errors: list[str]) -> None:
     st.error("❌ **Please fix the following issues:**")
     for err in errors:
         st.error(f"• {err}")
-    validation_tips = get_cached_help_content("validation-tips")
-    st.markdown(f"💡 {validation_tips}")
 
 
 def _handle_successful_submission(form_data: dict[str, Any]) -> None:
@@ -182,8 +179,7 @@ def deploy_pop_form() -> None:
     st.subheader("Deploy Point of Presence (PoP)")
 
     # Form instructions
-    instructions = get_cached_help_content("deploy-pop-instructions")
-    st.markdown(f"📋 {instructions}")
+    show_help_section("Deployment Instructions", "deploy-pop-instructions", icon="📋")
 
     with st.form("deploy_point_of_presence_form"):
         form_data = get_pop_form_data()

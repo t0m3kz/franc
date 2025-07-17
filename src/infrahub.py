@@ -137,35 +137,20 @@ def get_dropdown_options(
         client: The Infrahub client to use.
 
     Returns:
-        A list of dropdown options for the given attribute.
+        A list of option names for the given attribute.
 
     Raises:
-        AttributeNotFoundError: If the attribute is not found.
-        ValueError: If schema retrieval fails.
+        Exception: If the attribute is not found.
 
     """
-    try:
-        # Get schema for this kind
-        schema = client.schema.get(kind=kind, branch=branch)
-        if not schema:
-            msg = f"Schema kind '{kind}' not found in branch '{branch}'"
-            raise ValueError(msg)  # noqa: TRY301
+    # Get schema for this kind
+    schema = client.schema.get(kind=kind, branch=branch)
+    matched_attribute = next((att for att in schema.attributes if att.name == attribute_name), None)
 
-        # Find desired attribute
-        matched_attribute = next((att for att in schema.attributes if att.name == attribute_name), None)
-
-        if matched_attribute is None:
-            msg = f"Can't find attribute `{attribute_name}` for kind `{kind}`"
-            raise AttributeNotFoundError(msg)  # noqa: TRY301
-
-        # Return choice names if available
-        return [choice["name"] for choice in matched_attribute.choices] if matched_attribute.choices else []
-
-    except AttributeNotFoundError:
-        raise
-    except Exception as e:
-        msg = f"Failed to get dropdown options for {kind}.{attribute_name}: {e}"
-        raise ValueError(msg) from e
+    if matched_attribute is None:
+        msg = f"Can't find attribute `{attribute_name}` for kind `{kind}`"
+        raise Exception(msg)
+    return [choice["name"] for choice in matched_attribute.choices]
 
 
 @inject

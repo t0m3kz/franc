@@ -7,12 +7,13 @@ from typing import Any, NamedTuple
 
 import streamlit as st
 
-from help_loader import get_cached_help_content, show_help_section
 from schema_protocols import DcimDeviceType, LocationBuilding
 from utils import (
     get_dynamic_list,
+    handle_validation_errors,
     init_dynamic_field_state,
     select_options,
+    show_help_section,
     update_dynamic_field_state,
 )
 from validation import (
@@ -48,8 +49,6 @@ class ConnectDeviceFormState(NamedTuple):
     device_type: str
     location: str
     interfaces: InterfaceFormState
-    has_device_type_options: bool = False
-    has_location_options: bool = False
 
 
 def validate_connect_device_form(state: ConnectDeviceFormState) -> list[str]:
@@ -70,8 +69,6 @@ def validate_connect_device_form(state: ConnectDeviceFormState) -> list[str]:
     return collect_validation_errors(
         validate_required_field(state.change_number, "Change number"),
         validate_required_field(state.device_name, "Device name"),
-        validate_required_field(state.device_type, "Device type"),
-        validate_required_field(state.location, "Location"),
         validate_minimum_count(state.interfaces.names, 1, "interface with a name"),
         validate_unique_names(state.interfaces.names, "Interface names"),
         vpc_error,
@@ -161,7 +158,7 @@ def get_connect_device_form_data() -> dict[str, Any]:
     """Collect form input data for device connection.
 
     Returns:
-        dict[str, Any]: A dictionary containing all form input data.
+        dict[str, Any]: Dictionary containing all collected form input data.
 
     """
     change_number = st.text_input(
@@ -171,57 +168,33 @@ def get_connect_device_form_data() -> dict[str, Any]:
         placeholder="e.g., CHG-2024-001234",
     )
 
-    conn_name = st.text_input(
+    device_name = st.text_input(
         "Device Name *",
-        key="conn_name",
+        key="device_name",
         help="Enter a unique name for the device. Use a descriptive name that includes location "
         "and purpose (e.g., 'NYC-Core-SW01', 'LAB-Router-A')",
         placeholder="e.g., NYC-Core-SW01",
     )
 
-    # Device type selection with fallback
-    device_type_options = select_options(DcimDeviceType)
-    if device_type_options:
-        selected_device_type = st.selectbox(
-            "Device Type *",
-            options=device_type_options,
-            key="conn_device_type",
-            help="Select the type/role of device. This determines network policies and configuration templates.",
+    device_type = st.selectbox(
+            "Device type *",
+            select_options(DcimDeviceType),
+            key="device_type",
+            help="Choose the device type.",
         )
-    else:
-        selected_device_type = st.text_input(
-            "Device Type * (Manual Entry)",
-            key="conn_device_type_manual",
-            help="Enter the device type manually. Common types: 'Switch', 'Router', 'Firewall', 'Server'.",
-            placeholder="e.g., Switch, Router, Firewall",
-        )
-        st.info("💡 Device type options are not available. Using manual entry mode.")
 
-    # Location selection with fallback
-    location_options = select_options(LocationBuilding)
-    if location_options:
-        selected_location = st.selectbox(
-            "Location *",
-            options=location_options,
-            key="conn_location",
-            help="Select the physical location where the device is installed. This affects network topology.",
+    location = st.selectbox(
+            "Device type *",
+            select_options(LocationBuilding),
+            key="location",
+            help="Choose the device location.",
         )
-    else:
-        selected_location = st.text_input(
-            "Location * (Manual Entry)",
-            key="conn_location_manual",
-            help="Enter the location manually. Be specific about building, floor, or rack location.",
-            placeholder="e.g., Building A Floor 2, Rack R15",
-        )
-        st.info("💡 Location options are not available. Using manual entry mode.")
 
     return {
         "change_number": change_number,
-        "device_name": conn_name,
-        "device_type": selected_device_type,
-        "location": selected_location,
-        "has_device_type_options": bool(device_type_options),
-        "has_location_options": bool(location_options),
+        "device_name": device_name,
+        "device_type": device_type,
+        "location": location,
     }
 
 
@@ -257,17 +230,7 @@ def _show_success_message(form_state: ConnectDeviceFormState, interfaces: Interf
     st.snow()
     st.markdown(f"**Configured Interfaces:** {summary}")
 
-    next_steps = get_cached_help_content("connection-next-steps")
-    st.markdown(next_steps)
-
-
-def _handle_validation_errors(errors: list[str]) -> None:
-    """Handle and display validation errors."""
-    st.error("❌ **Please fix the following issues:**")
-    for err in errors:
-        st.error(f"• {err}")
-    validation_tips = get_cached_help_content("validation-tips")
-    st.markdown(f"💡 {validation_tips}")
+    show_help_section("Next Steps", "connection-next-steps")
 
 
 def _handle_successful_submission(form_state: ConnectDeviceFormState, interfaces: InterfaceFormState) -> None:
@@ -357,8 +320,6 @@ def _render_main_form() -> tuple[ConnectDeviceFormState | None, bool]:
                 device_type=device_info["device_type"],
                 location=device_info["location"],
                 interfaces=interfaces,
-                has_device_type_options=device_info["has_device_type_options"],
-                has_location_options=device_info["has_location_options"],
             )
             return form_state, True
 
@@ -370,8 +331,7 @@ def connect_device_form() -> None:
     st.subheader("Device Connection Request")
 
     # Form instructions
-    instructions = get_cached_help_content("connect-device-instructions")
-    st.markdown(f"📋 {instructions}")
+    show_help_section("Deployment Instructions", "connect-device-instructions", icon="📋")
 
     # Initialize dynamic states
     _initialize_dynamic_states()
@@ -387,7 +347,7 @@ def connect_device_form() -> None:
         errors = validate_connect_device_form(form_state)
 
         if errors:
-            _handle_validation_errors(errors)
+            handle_validation_errors(errors)
         else:
             # Here we can process infrahub update
             _handle_successful_submission(form_state, form_state.interfaces)
