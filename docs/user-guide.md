@@ -4,6 +4,7 @@
 
 FRANC (Streamlit connection and utilities for Infrahub) is a web-based service portal that provides a self-service interface for network operations teams. The portal offers a mobile-friendly interface for requesting common network services including device connections, data center deployments, and point-of-presence (PoP) deployments.
 
+
 ## Getting Started
 
 ### Accessing the Portal
@@ -11,15 +12,20 @@ FRANC (Streamlit connection and utilities for Infrahub) is a web-based service p
 The Service Portal is a web application accessible through your browser. Once launched, you'll see:
 
 - **🛠️ Service Portal** header with "Network Operations Self-Service" subtitle
-- **Home** and **Service Catalogue** navigation tabs
+- **Home** and **Service Catalogue** navigation tabs (bottom navigation bar style for mobile)
 - Mobile-responsive design that adapts to your device
 
 ### Navigation
 
-The portal uses a simple two-tab navigation:
+The portal uses a two-tab navigation:
 
-1. **Home**: Welcome page with overview and quick links
-2. **Service Catalogue**: Access to all available services
+1. **Home**: Welcome page with service overview cards and quick help
+2. **Service Catalogue**: Access all available services via a selectbox
+
+**Mobile Optimization:**
+- Navigation tabs are styled for thumb access
+- All forms and controls are touch-friendly
+
 
 ## Available Services
 
@@ -30,16 +36,16 @@ Request deployment of a new data center infrastructure.
 **Required Information:**
 - **Change Number**: Approved change management number (required)
 - **Data Center Name**: Unique identifier for the new data center
-- **Location**: Geographic location (selected from available metros or manually entered)
+- **Location**: Geographic location (select from available metros or enter manually if options are unavailable)
 - **Design Pattern**: Infrastructure design template (filtered for DC-specific patterns)
 
 **Process:**
 1. Obtain approved change number from your change management team
-2. Navigate to **Service Catalogue**
+2. Go to **Service Catalogue**
 3. Select **"Deploy Data Center"** from the service dropdown
 4. Enter your change number as the first field
 5. Fill in all required fields
-6. Click **"🚀 Submit Data Center Request"** to submit
+6. Click **"🚀 Submit Data Center Request"**
 7. Confirmation message will display change number and details upon successful submission
 
 ### 2. Deploy Point of Presence (PoP)
@@ -49,17 +55,17 @@ Request deployment of a new point-of-presence location.
 **Required Information:**
 - **Change Number**: Approved change management number (required)
 - **PoP Name**: Unique identifier for the new PoP
-- **Location**: Geographic location (selected from available metros or manually entered)
+- **Location**: Geographic location (select from available metros or enter manually if options are unavailable)
 - **Design Pattern**: Infrastructure design template (filtered for PoP-specific patterns)
 - **Provider**: Network service provider for the PoP
 
 **Process:**
 1. Obtain approved change number from your change management team
-2. Navigate to **Service Catalogue**
+2. Go to **Service Catalogue**
 3. Select **"Deploy PoP"** from the service dropdown
 4. Enter your change number as the first field
 5. Fill in all required fields including provider selection
-6. Click **"🚀 Submit PoP Request"** to submit
+6. Click **"🚀 Submit PoP Request"**
 7. Confirmation message will display change number and details upon successful submission
 
 ### 3. Connection Request (Device Connection)
@@ -69,8 +75,8 @@ Request network connection for a device with interface configuration.
 **Required Information:**
 - **Change Number**: Approved change management number (required)
 - **Device Name**: Unique identifier for the device
-- **Device Type**: Device role/type (selected from available options or manually entered)
-- **Location**: Physical location (selected from available buildings or manually entered)
+- **Device Type**: Device role/type (select from available options or enter manually if options are unavailable)
+- **Location**: Physical location (select from available buildings or enter manually if options are unavailable)
 - **Interface Configuration**: One or more network interfaces
 
 **Interface Configuration Details:**
@@ -88,19 +94,20 @@ For each interface, specify:
 
 **Process:**
 1. Obtain approved change number from your change management team
-2. Navigate to **Service Catalogue**
+2. Go to **Service Catalogue**
 3. Select **"Connection Request"** from the service dropdown
 4. Enter your change number as the first field
 5. Fill in device information
 6. Configure the number of interfaces needed
 7. Set up vPC groups if required
 8. Configure each interface (name, speed, role, vPC assignment)
-9. Click **"🚀 Submit Connection Request"** to submit
+9. Click **"🚀 Submit Connection Request"**
 10. Confirmation message will display change number and interface details upon successful submission
 
-## Form Validation
 
-All service forms include comprehensive validation:
+## Form Validation & Help
+
+All service forms include comprehensive validation and built-in help:
 
 ### Common Validations
 - **Change Number**: Required for all service requests, must not be empty
@@ -114,13 +121,21 @@ All service forms include comprehensive validation:
 - **vPC Group Validation**: Each vPC group must contain at least two interfaces
 - **Complete Interface Configuration**: All interface fields must be filled
 
+### Help Integration
+- Help icons and expandable sections are available for every service and field
+- Quick Help is always available on the Home tab
+- Interface configuration help is available in the Connection Request form
+
+
 ## Error Handling
 
-The portal provides clear, actionable error messages:
+The portal provides clear, actionable error messages and guidance:
 
 - **Field-Level Errors**: Specific guidance for each invalid field
 - **Real-Time Validation**: Immediate feedback as you fill forms
 - **Success Confirmation**: Clear confirmation when requests are submitted successfully
+- **Validation Tips**: Expandable help sections provide tips for fixing errors
+
 
 ## Mobile Optimization
 
@@ -130,21 +145,24 @@ The Service Portal is designed for mobile use:
 - **Touch-Friendly Controls**: Large buttons and touch targets
 - **Optimized Navigation**: Bottom navigation bar style for easy thumb access
 - **Readable Typography**: Appropriate font sizes for mobile devices
+- **Landscape Mode**: Recommended for complex forms
+
 
 ## Data Integration
 
 The portal integrates with your organization's infrastructure management system:
 
-- **Dynamic Option Loading**: Service options loaded from your infrastructure database
+- **Dynamic Option Loading**: Service options loaded from Infrahub or other infrastructure database
 - **Fallback Support**: Manual entry available when external systems are unavailable
 - **Real-Time Data**: Information pulled from live infrastructure management systems
+
 
 ## Support and Troubleshooting
 
 ### Common Issues
 
 **"No options available" in dropdown menus:**
-- This occurs when the external infrastructure system is unavailable
+- This occurs when Infrahub or external infrastructure system is unavailable
 - Use the manual text input field that appears automatically
 - Contact support if this persists
 
@@ -166,6 +184,7 @@ For technical support or feature requests:
 - Include specific error messages and screenshots when reporting issues
 - Mention which service you were trying to use
 
+
 ## Tips for Efficient Use
 
 1. **Bookmark the Portal**: Save the portal URL for quick access
@@ -173,6 +192,8 @@ For technical support or feature requests:
 3. **Plan Interface Configuration**: Know your interface requirements before starting
 4. **Review Before Submitting**: Use the interface summary to verify complex configurations
 5. **Mobile Access**: The portal works well on phones and tablets for quick requests
+6. **Expand Help Sections**: Use help icons and expandable sections for guidance
+
 
 ## Security and Data Privacy
 
@@ -180,6 +201,8 @@ For technical support or feature requests:
 - Integration with existing infrastructure management systems maintains data consistency
 - Form submissions are logged for audit purposes
 - No sensitive data is stored in browser sessions
+- Validation and error handling prevent common security issues
+
 
 ## Change Management Requirements
 

@@ -27,23 +27,32 @@ uv run streamlit run src/main.py
 
 The application will start on http://localhost:8501 and work with limited functionality (no Infrahub integration).
 
-### Full Setup with Infrahub
 
-1. Copy the environment template:
-```bash
-cp .env.example .env
-```
+### Full Setup with Infrahub & Sample Data
 
-2. Configure your Infrahub connection in `.env`:
-```bash
-INFRAHUB_ADDRESS=http://your-infrahub-server:8000
-INFRAHUB_API_TOKEN="06438eb2-8019-4776-878c-0941b1f1d1ec"
-```
+1. Clone the Infrahub demo repository for sample schemas and data:
+   [infrahub-demo](https://github.com/t0m3kz/infrahub-demo)
 
-3. Run the application:
-```bash
-uv run streamlit run src/main.py
-```
+   ```bash
+   git clone https://github.com/t0m3kz/infrahub-demo
+   # Follow setup instructions in infrahub-demo/README.md to start Infrahub with sample data
+   ```
+
+2. Copy the environment template:
+   ```bash
+   cp .env.example .env
+   ```
+
+3. Configure your Infrahub connection in `.env` (use the address and token from your infrahub-demo setup):
+   ```bash
+   INFRAHUB_ADDRESS=http://your-infrahub-server:8000
+   INFRAHUB_API_TOKEN="06438eb2-8019-4776-878c-0941b1f1d1ec"
+   ```
+
+4. Run the application:
+   ```bash
+   uv run streamlit run src/main.py
+   ```
 
 ## Features
 

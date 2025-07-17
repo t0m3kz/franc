@@ -360,25 +360,33 @@ src/help/
 
 ## Testing
 
+
 ### Test Structure
 
 ```
 tests/
 ├── __init__.py
 ├── test_validation.py      # Validation function tests
-├── test_utils.py          # Utility function tests
+├── test_utils.py          # Utility function tests (covers all dynamic field/session logic)
+├── test_help_loader.py    # Help content loader tests
+├── test_simple_structures.py # Data structure tests
+├── test_workflow_engine.py   # Workflow engine tests
 └── test_services/         # Service-specific tests
     ├── test_connect_device.py
     ├── test_deploy_dc.py
     └── test_deploy_pop.py
 ```
 
+
 ### Testing Guidelines
 
 1. **Unit Tests**: Test individual functions in isolation
 2. **Integration Tests**: Test service workflows end-to-end
 3. **Validation Tests**: Comprehensive validation logic testing
-4. **Mock External Dependencies**: Mock Infrahub SDK calls in tests
+4. **Mock External Dependencies**: Mock Infrahub SDK and Streamlit in tests
+5. **Path Handling**: Utility tests use `pathlib.Path` for sys.path setup to ensure correct module resolution
+6. **Session State**: All dynamic field/session logic in `utils.py` is covered by tests using Streamlit mocks
+
 
 ### Running Tests
 
@@ -390,7 +398,7 @@ uv run pytest
 uv run pytest --cov=src
 
 # Run specific test file
-uv run pytest tests/test_validation.py
+uv run pytest tests/test_utils.py
 
 # Run with verbose output
 uv run pytest -v
@@ -534,35 +542,7 @@ validate_required_field(state.change_number, "Change Number")
 - [ ] Mobile-responsive design considerations
 - [ ] Documentation updated if needed
 
-## Deployment
-
-### Docker Deployment
-
-```bash
-# Build image
-docker build -t franc .
-
-# Run container
 docker run -p 8501:8501 -e INFRAHUB_ADDRESS="http://infrahub" franc
-```
-
-### Docker Compose
-
-```bash
-# Start services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-```
-
-### Production Considerations
-
-1. **Environment Variables**: Set `INFRAHUB_ADDRESS` appropriately
-2. **Health Checks**: Monitor application health and Infrahub connectivity
-3. **Logging**: Configure appropriate log levels and destinations
-4. **Security**: Ensure proper network security and access controls
-5. **Performance**: Monitor memory usage and response times
 
 ## API Integration
 
@@ -573,6 +553,39 @@ The application integrates with Infrahub using the official SDK:
 ```python
 from infrahub_sdk import InfrahubClientSync, Config
 
+
+    address = os.environ.get("INFRAHUB_ADDRESS")
+    return InfrahubClientSync(address=address, config=Config(default_branch=branch))
+```
+
+### Schema Protocols
+
+Generated protocols provide type-safe access to Infrahub schemas:
+
+```python
+from schema_protocols import LocationBuilding, DesignTopology
+
+# Use in safe_select_options
+location_options = safe_select_options(LocationBuilding)
+design_options = safe_select_options(DesignTopology, filters={"type__value": "DC"})
+```
+
+### Error Handling & Test Coverage
+
+External API calls are wrapped with error handling:
+
+```python
+def safe_select_options(kind: type, **kwargs: Any) -> list:
+    try:
+        return select_options(kind, **kwargs)
+    except Exception as e:
+        st.error(f"Failed to load options: {e}")
+        return []
+```
+
+#### Utility Function Tests
+
+All dynamic field/session logic in `src/utils.py` is covered by unit tests in `tests/test_utils.py`. Streamlit is fully mocked, and `pathlib.Path` is used for sys.path setup to ensure correct imports.
 def get_client(branch: str = "main") -> InfrahubClientSync:
     address = os.environ.get("INFRAHUB_ADDRESS")
     return InfrahubClientSync(address=address, config=Config(default_branch=branch))
