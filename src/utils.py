@@ -25,7 +25,9 @@ class DropdownOptionsKwargs(TypedDict, total=False):
     client: InfrahubClientSync
 
 
-def handle_validation_errors(errors: list[str], help_key: str = "validation-tips") -> None:
+def handle_validation_errors(
+    errors: list[str], help_key: str = "validation-tips"
+) -> None:
     """Handle and display validation errors in Streamlit.
 
     Args:
@@ -107,7 +109,9 @@ def get_dynamic_list(key: str, default: str, num: int) -> list[str]:
     return vals
 
 
-def init_dynamic_field_state(state_key: str, default_count: int = 1, default_value: str = "") -> None:
+def init_dynamic_field_state(
+    state_key: str, default_count: int = 1, default_value: str = ""
+) -> None:
     """Initialize session state for a dynamic field list.
 
     Note: This function is kept for backward compatibility.
@@ -131,6 +135,7 @@ def update_dynamic_field_state(state_key: str) -> None:
         st.session_state[f"{state_key}_values"] = current + [""] * (n - len(current))
     elif len(current) > n:
         st.session_state[f"{state_key}_values"] = current[:n]
+
 
 # --- Help content loader functions ---
 

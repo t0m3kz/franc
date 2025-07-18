@@ -7,6 +7,7 @@ import streamlit as st
 
 from services.connect_device import connect_device_form
 from services.deploy_dc import deploy_dc_form
+from services.deploy_network import deploy_network_form
 from services.deploy_pop import deploy_pop_form
 from utils import show_help_section
 
@@ -90,7 +91,10 @@ if selected_tab == "Home":
     # Quick help section
     show_help_section("Quick Help & Tips", "quick-help")
 elif selected_tab == "Service Catalogue":
-    st.markdown("<h2 style='margin-bottom:0.5rem;font-size:1.2rem;'>Service Catalogue</h2>", unsafe_allow_html=True)
+    st.markdown(
+        "<h2 style='margin-bottom:0.5rem;font-size:1.2rem;'>Service Catalogue</h2>",
+        unsafe_allow_html=True,
+    )
 
     # Service descriptions
     st.markdown(
@@ -103,7 +107,12 @@ elif selected_tab == "Service Catalogue":
     # Use a mobile-friendly selectbox for service selection
     service = st.selectbox(
         "Select a service:",
-        ["Deploy Data Center", "Deploy PoP", "Connection Request"],
+        [
+            "Deploy Data Center",
+            "Deploy PoP",
+            "Connect Device",
+            "Deploy Network Segment",
+        ],
         key="service_select",
         help="Choose the network service you want to request. Each service has different requirements and workflows.",
     )
@@ -112,9 +121,12 @@ elif selected_tab == "Service Catalogue":
     if service == "Deploy Data Center":
         show_help_section("About Data Center Deployment", "deploy-dc")
         deploy_dc_form()
-    elif service == "Connection Request":
+    elif service == "Connect Device":
         show_help_section("About Device Connection Requests", "connect-device")
         connect_device_form()
     elif service == "Deploy PoP":
         show_help_section("About Point of Presence Deployment", "deploy-pop")
         deploy_pop_form()
+    elif service == "Deploy Network Segment":
+        show_help_section("About Network Segment Deployment", "deploy-network-segment")
+        deploy_network_form()

@@ -1,4 +1,3 @@
-
 # Copyright (c) 2024 FRANC Service Portal
 # All rights reserved.
 """Unit tests for utils.py."""

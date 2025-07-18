@@ -42,7 +42,9 @@ class TestDataStructures:
         assert not interface.description
 
         # Test with description
-        interface_with_desc = TestInterface("eth1", "int-456", "ethernet1", "Management Interface")
+        interface_with_desc = TestInterface(
+            "eth1", "int-456", "ethernet1", "Management Interface"
+        )
         assert interface_with_desc.description == "Management Interface"
 
     def test_attribute_types(self):

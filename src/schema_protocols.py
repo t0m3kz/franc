@@ -1894,7 +1894,9 @@ class TemplateDcimVirtualDevice(
     topology: RelatedNode
 
 
-class TemplateDcimVirtualInterface(LineageSource, CoreObjectComponentTemplate, TemplateDcimInterface, CoreNode):
+class TemplateDcimVirtualInterface(
+    LineageSource, CoreObjectComponentTemplate, TemplateDcimInterface, CoreNode
+):
     description: StringOptional
     name: String
     role: DropdownOptional

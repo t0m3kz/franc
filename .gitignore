@@ -9,8 +9,8 @@ wheels/
 # Virtual environments
 .venv
 .env/
-.env.example
 .pytest_cache/
 .ruff_cache/
 .dev/
-
+.mypy_cache/
+.env

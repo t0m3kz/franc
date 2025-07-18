@@ -37,7 +37,9 @@ def validate_required_field(value: str | None, field_name: str) -> str | None:
     return None
 
 
-def validate_required_selection(options: list[str], selected_value: str | None, field_name: str) -> str | None:
+def validate_required_selection(
+    options: list[str], selected_value: str | None, field_name: str
+) -> str | None:
     """Validate that a selection field has a valid value when options are available.
 
     Args:
@@ -100,7 +102,9 @@ def validate_unique_names(names: list[str], field_name: str = "Names") -> str | 
     return None
 
 
-def validate_minimum_count(items: list[str], min_count: int, field_name: str) -> str | None:
+def validate_minimum_count(
+    items: list[str], min_count: int, field_name: str
+) -> str | None:
     """Validate that a list has at least the minimum number of valid (non-empty) items.
 
     Args:
@@ -148,7 +152,9 @@ def collect_validation_errors(*validators: str | None) -> list[str]:
         []
 
     """
-    return [error.strip() for error in validators if error is not None and error.strip()]
+    return [
+        error.strip() for error in validators if error is not None and error.strip()
+    ]
 
 
 def validate_vpc_groups(vpcs: list[bool], vpc_groups: list[str]) -> list[str]:
@@ -185,4 +191,8 @@ def validate_vpc_groups(vpcs: list[bool], vpc_groups: list[str]) -> list[str]:
             vpc_group_counts[group] = vpc_group_counts.get(group, 0) + 1
 
     # Return groups with insufficient members
-    return [group_name for group_name, count in vpc_group_counts.items() if count < MIN_VPC_GROUP_MEMBERS]
+    return [
+        group_name
+        for group_name, count in vpc_group_counts.items()
+        if count < MIN_VPC_GROUP_MEMBERS
+    ]

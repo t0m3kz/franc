@@ -145,7 +145,9 @@ def get_dropdown_options(
     """
     # Get schema for this kind
     schema = client.schema.get(kind=kind, branch=branch)
-    matched_attribute = next((att for att in schema.attributes if att.name == attribute_name), None)
+    matched_attribute = next(
+        (att for att in schema.attributes if att.name == attribute_name), None
+    )
 
     if matched_attribute is None:
         msg = f"Can't find attribute `{attribute_name}` for kind `{kind}`"
@@ -154,7 +156,9 @@ def get_dropdown_options(
 
 
 @inject
-def create_branch(branch_name: str, client: InfrahubClientSync = Depends(get_client)) -> dict[str, str]:
+def create_branch(
+    branch_name: str, client: InfrahubClientSync = Depends(get_client)
+) -> dict[str, str]:
     """Create a new branch.
 
     Args:

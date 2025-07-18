@@ -137,7 +137,9 @@ class ObjectFormData(TypedDict, total=False):
     # ... add more fields as needed
 
 
-def validate_object_form(form_data: ObjectFormData, required_fields: list[str]) -> list[str]:
+def validate_object_form(
+    form_data: ObjectFormData, required_fields: list[str]
+) -> list[str]:
     """Validate required fields in object form data.
 
     Parameters
@@ -156,7 +158,11 @@ def validate_object_form(form_data: ObjectFormData, required_fields: list[str]) 
     validation_results = []
     for field_name in required_fields:
         field_display_name = field_name.replace("_", " ").title()
-        validation_results.append(validate_required_field(str(form_data.get(field_name, "")), field_display_name))
+        validation_results.append(
+            validate_required_field(
+                str(form_data.get(field_name, "")), field_display_name
+            )
+        )
     return collect_validation_errors(*validation_results)
 
 
