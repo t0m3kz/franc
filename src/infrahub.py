@@ -13,7 +13,6 @@ from fast_depends import Depends, inject
 from infrahub_sdk import Config, InfrahubClientSync
 
 if TYPE_CHECKING:
-    from infrahub_sdk.branch import BranchData
     from infrahub_sdk.client import SchemaTypeSync
 
 
@@ -131,19 +130,24 @@ def get_dropdown_options(
 ) -> list[str]:
     """Get dropdown options for a given attribute.
 
+    Args:
+        kind: The schema kind to get options for.
+        attribute_name: The name of the attribute to get options for.
+        branch: The branch to use for schema lookup.
+        client: The Infrahub client to use.
+
+    Returns:
+        A list of option names for the given attribute.
+
     Raises:
         Exception: If the attribute is not found.
 
-    Returns:
-        A list of dropdown options for the given attribute.
-
     """
     # Get schema for this kind
-
     schema = client.schema.get(kind=kind, branch=branch)
-
-    # Find desired attribute
-    matched_attribute = next((att for att in schema.attributes if att.name == attribute_name), None)
+    matched_attribute = next(
+        (att for att in schema.attributes if att.name == attribute_name), None
+    )
 
     if matched_attribute is None:
         msg = f"Can't find attribute `{attribute_name}` for kind `{kind}`"
@@ -152,7 +156,9 @@ def get_dropdown_options(
 
 
 @inject
-def create_branch(branch_name: str, client: InfrahubClientSync = Depends(get_client)) -> BranchData:
+def create_branch(
+    branch_name: str, client: InfrahubClientSync = Depends(get_client)
+) -> dict[str, str]:
     """Create a new branch.
 
     Args:
@@ -160,7 +166,20 @@ def create_branch(branch_name: str, client: InfrahubClientSync = Depends(get_cli
         client: The Infrahub client to use.
 
     Returns:
-        The created branch.
+        Dictionary with branch information.
+
+    Raises:
+        ValueError: If branch creation fails.
 
     """
-    return client.branch.create(branch_name=branch_name, sync_with_git=False)
+    try:
+        result = client.branch.create(branch_name=branch_name, sync_with_git=False)
+        # Convert result to a simple dict to avoid Pydantic model issues
+        return {
+            "name": getattr(result, "name", branch_name),
+            "status": "created",
+            "sync_with_git": "false",  # Use string instead of boolean
+        }
+    except Exception as e:
+        msg = f"Failed to create branch '{branch_name}': {e}"
+        raise ValueError(msg) from e

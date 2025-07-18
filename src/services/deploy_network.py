@@ -191,7 +191,7 @@ def render_device_connection_form() -> tuple[DeviceConnectionState | None, bool]
         return None, False
 
 
-def connect_device_form() -> None:
+def deploy_network_form() -> None:
     """Streamlit form for device connection and interface configuration."""
     st.subheader("Device Connection Request")
     show_help_section(

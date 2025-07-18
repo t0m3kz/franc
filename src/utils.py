@@ -1,8 +1,7 @@
 # Copyright (c) 2024 FRANC Service Portal
 # All rights reserved.
-
-"""Utility functions for the FRANC Service Portal."""
-
+"""Utility functions for Streamlit app."""
+from pathlib import Path
 from typing import TypedDict
 
 import streamlit as st
@@ -24,6 +23,28 @@ class DropdownOptionsKwargs(TypedDict, total=False):
     attribute_name: str
     branch: str
     client: InfrahubClientSync
+
+
+def handle_validation_errors(
+    errors: list[str], help_key: str = "validation-tips"
+) -> None:
+    """Handle and display validation errors in Streamlit.
+
+    Args:
+        errors: List of error messages to display.
+        help_key: Key for help content to show tips (default: "validation-tips").
+
+    """
+    st.error("❌ **Please fix the following issues:**")
+    for err in errors:
+        st.error(f"• {err}")
+    validation_tips = None
+    try:
+        validation_tips = show_help_section("Validation Tips", help_key)
+    except (OSError, UnicodeDecodeError):
+        validation_tips = None
+    if validation_tips:
+        st.markdown(f"💡 {validation_tips}")
 
 
 def select_options(kind: type, **kwargs: SelectOptionsKwargs) -> list:
@@ -88,7 +109,9 @@ def get_dynamic_list(key: str, default: str, num: int) -> list[str]:
     return vals
 
 
-def init_dynamic_field_state(state_key: str, default_count: int = 1, default_value: str = "") -> None:
+def init_dynamic_field_state(
+    state_key: str, default_count: int = 1, default_value: str = ""
+) -> None:
     """Initialize session state for a dynamic field list.
 
     Note: This function is kept for backward compatibility.
@@ -112,3 +135,27 @@ def update_dynamic_field_state(state_key: str) -> None:
         st.session_state[f"{state_key}_values"] = current + [""] * (n - len(current))
     elif len(current) > n:
         st.session_state[f"{state_key}_values"] = current[:n]
+
+
+# --- Help content loader functions ---
+
+
+def show_help_section(title: str, help_file: str, icon: str = "📖") -> None:
+    """Display a help section using content from a markdown file, with error handling.
+
+    Args:
+        title: Title for the expandable help section
+        help_file: Name of the help file (without .md extension)
+        icon: Icon to display with the title
+
+    """
+    with st.expander(f"{icon} {title}"):
+        try:
+            help_path = Path(__file__).parent / "help" / f"{help_file}.md"
+            if help_path.exists():
+                content = help_path.read_text(encoding="utf-8")
+                st.markdown(content)
+            else:
+                st.error(f"Help file not found: {help_file}.md")
+        except (OSError, UnicodeDecodeError) as e:
+            st.error(f"Error loading help: {e}")
