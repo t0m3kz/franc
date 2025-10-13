@@ -230,15 +230,15 @@ wheels = [
 
 [[package]]
 name = "fast-depends"
-version = "2.4.12"
+version = "3.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
-    { name = "pydantic" },
+    { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/85/f5/8b42b7588a67ad78991e5e7ca0e0c6a1ded535a69a725e4e48d3346a20c1/fast_depends-2.4.12.tar.gz", hash = "sha256:9393e6de827f7afa0141e54fa9553b737396aaf06bd0040e159d1f790487b16d", size = 16682, upload-time = "2024-10-16T17:44:35.963Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b1/04/8facefa7a91d4c8d4d8db30f042b66c6bd0b8d749064210e6947c47ed1f4/fast_depends-3.0.1.tar.gz", hash = "sha256:1d69645310dafbdb528f0fe5ce6b386bccbf1e3ed19f9350374d67a9e60ef9a0", size = 17324, upload-time = "2025-10-12T19:21:20.309Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1d/08/4adb160d8394053289fdf3b276e93b53271fd463e54fff8911b23c1db4ed/fast_depends-2.4.12-py3-none-any.whl", hash = "sha256:9e5d110ddc962329e46c9b35e5fe65655984247a13ee3ca5a33186db7d2d75c2", size = 17651, upload-time = "2024-10-16T17:44:34.759Z" },
+    { url = "https://files.pythonhosted.org/packages/6b/07/576fc99c91d1ad299eab4d6f31675daab4dbb0d1cbf7e82397189ddec797/fast_depends-3.0.1-py3-none-any.whl", hash = "sha256:3deda56186ca2092fa1a03b062ffd0b376a1d444fb6705eb5fb643cfaed4b7a3", size = 24157, upload-time = "2025-10-12T19:21:18.776Z" },
 ]
 
 [[package]]
